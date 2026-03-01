@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SmartInventory.Core\SmartInventory.Core.csproj" />
+    <ProjectReference Include="..\SmartInventory.Data\SmartInventory.Data.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
