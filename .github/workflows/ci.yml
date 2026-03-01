@@ -36,7 +36,7 @@ jobs:
       # 6 Optional: Publish test results for artifact
       - name: Publish test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: '**/TestResults/*.xml'
