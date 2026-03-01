@@ -1,6 +1,5 @@
-name: .NET CI (Windows)
+name: .NET CI - Windows
 
-# Trigger on push or pull request to main branch
 on:
   push:
     branches: [ main ]
@@ -8,29 +7,36 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
-    # Use a Windows runner
+  build-and-test:
     runs-on: windows-latest
 
     steps:
-      # Step 1 — Checkout repository
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      # 1 Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      # Step 2 — Install .NET SDK
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      # 2 Setup .NET 9 SDK
+      - name: Setup .NET 9 SDK
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: 9.0.x
 
-      # Step 3 — Restore dependencies
+      # 3 Restore dependencies
       - name: Restore dependencies
         run: dotnet restore
 
-      # Step 4 — Build solution
+      # 4 Build solution
       - name: Build solution
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build --no-restore --configuration Debug
 
-      # Step 5 — Run all xUnit tests
+      # 5 Run all tests
       - name: Run tests
-        run: dotnet test --configuration Release --no-build --verbosity normal
+        run: dotnet test --no-build --configuration Debug --verbosity normal
+
+      # 6 Optional: Publish test results for artifact
+      - name: Publish test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: '**/TestResults/*.xml'
