@@ -1,0 +1,36 @@
+name: .NET CI (Windows)
+
+# Trigger on push or pull request to main branch
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    # Use a Windows runner
+    runs-on: windows-latest
+
+    steps:
+      # Step 1 — Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2 — Install .NET SDK
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      # Step 3 — Restore dependencies
+      - name: Restore dependencies
+        run: dotnet restore
+
+      # Step 4 — Build solution
+      - name: Build solution
+        run: dotnet build --configuration Release --no-restore
+
+      # Step 5 — Run all xUnit tests
+      - name: Run tests
+        run: dotnet test --configuration Release --no-build --verbosity normal
