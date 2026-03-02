@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SmartInventory.Core.Entities;
 using SmartInventory.Data;
 using SmartInventory.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace SmartInventory.Services.Tests
@@ -30,7 +31,7 @@ namespace SmartInventory.Services.Tests
             context.Categories.Add(category);
             await context.SaveChangesAsync();
 
-            var service = new ProductService(context);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance);
             var product = new Product { Name = "Test Product", Quantity = 5, Category = category };
 
             // Act
@@ -50,7 +51,7 @@ namespace SmartInventory.Services.Tests
             context.Categories.Add(category);
             await context.SaveChangesAsync();
 
-            var service = new ProductService(context);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance);
             var product = new Product { Name = "Invalid", Quantity = -1, Category = category };
 
             await Assert.ThrowsAsync<ArgumentException>(async () =>
@@ -70,7 +71,7 @@ namespace SmartInventory.Services.Tests
             context.Products.Add(new Product { Name = "P2", Quantity = 3, Category = category });
             await context.SaveChangesAsync();
 
-            var service = new ProductService(context);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance);
 
             var all = await service.GetAllAsync();
 
@@ -89,7 +90,7 @@ namespace SmartInventory.Services.Tests
             context.Products.Add(product);
             await context.SaveChangesAsync();
 
-            var service = new ProductService(context);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance);
             var fetched = await service.GetByIdAsync(product.Id);
 
             Assert.NotNull(fetched);
@@ -100,7 +101,7 @@ namespace SmartInventory.Services.Tests
         public async Task GetByIdAsync_ShouldReturnNull_WhenNotExists()
         {
             var context = GetInMemoryDbContext();
-            var service = new ProductService(context);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance);
 
             var result = await service.GetByIdAsync(Guid.NewGuid());
 
@@ -119,7 +120,7 @@ namespace SmartInventory.Services.Tests
             context.Products.Add(product);
             await context.SaveChangesAsync();
 
-            var service = new ProductService(context);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance);
             product.Name = "NewName";
 
             await service.UpdateAsync(product);
@@ -140,7 +141,7 @@ namespace SmartInventory.Services.Tests
             context.Products.Add(product);
             await context.SaveChangesAsync();
 
-            var service = new ProductService(context);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance);
             await service.DeleteAsync(product.Id);
 
             Assert.Empty(context.Products);
@@ -150,7 +151,7 @@ namespace SmartInventory.Services.Tests
         public async Task DeleteAsync_ShouldThrow_WhenNotExists()
         {
             var context = GetInMemoryDbContext();
-            var service = new ProductService(context);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance);
 
             await Assert.ThrowsAsync<KeyNotFoundException>(async () =>
                 await service.DeleteAsync(Guid.NewGuid()));

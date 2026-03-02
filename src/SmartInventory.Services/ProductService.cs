@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SmartInventory.Core.Entities;
 using SmartInventory.Core.Interfaces;
 using SmartInventory.Data;
@@ -12,15 +13,17 @@ namespace SmartInventory.Services;
 public class ProductService : IProductService
 {
     private readonly InventoryDbContext _context;
+    private readonly ILogger<ProductService> _logger;
 
-    public ProductService(InventoryDbContext context)
+    public ProductService(InventoryDbContext context, ILogger<ProductService> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task<IEnumerable<Product>> GetAllAsync()
     {
-        // Include category for richer API response
+        _logger.LogInformation("Retrieving all products.");
         return await _context.Products
             .Include(p => p.Category)
             .ToListAsync();
