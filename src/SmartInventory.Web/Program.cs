@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SmartInventory.Core.Interfaces;
 using SmartInventory.Data;
 using SmartInventory.Services;
+using System.Text.Json.Serialization;
 
 
 
@@ -28,7 +29,12 @@ builder.Services.AddLogging(logging =>
     logging.AddConsole();
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+    {
+        // Prevent JSON cycles when serializing entities with back-references
+        o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 
 // Enable CORS
 builder.Services.AddCors(options =>
