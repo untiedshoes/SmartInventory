@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SmartInventory.Core.Interfaces;
 using SmartInventory.Data;
 using SmartInventory.Services;
-using SmartInventory.Services;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
