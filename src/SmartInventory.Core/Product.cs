@@ -21,7 +21,7 @@ public class Product
     public decimal Price { get; set; }
 
     // Foreign key
-    public Guid CategoryID { get; set; }
+    public Guid CategoryId { get; set; }
 
     // Navigation property
     public Category? Category { get; set; }
