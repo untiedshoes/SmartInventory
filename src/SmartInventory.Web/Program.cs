@@ -11,11 +11,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<InventoryDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("InventoryDb")));
 
-
-// Register business services
+// Register business services - use the real ProductService by default.
 builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<IProductService, FakeProductService>(); // For testing without DB
 
+// Optionally override with the fake implementation for local testing.
+// Set `UseFakeService` to true in appsettings.Development.json to enable.
+var useFake = builder.Configuration.GetValue<bool>("UseFakeService");
+if (useFake)
+{
+    builder.Services.AddScoped<IProductService, FakeProductService>(); // For testing without DB
+}
 
 // Logging
 builder.Services.AddLogging(logging =>
