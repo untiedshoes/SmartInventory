@@ -1,20 +1,11 @@
 ﻿{
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
-    "http": {
+    "SmartInventory.Web": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": false,
-      "applicationUrl": "http://localhost:5096",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "https": {
-      "commandName": "Project",
-      "dotnetRunMessages": true,
-      "launchBrowser": false,
-      "applicationUrl": "https://localhost:7056;http://localhost:5096",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5100;https://localhost:5101",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

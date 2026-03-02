@@ -30,7 +30,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactDev",
         policy => policy
-            .WithOrigins("http://localhost:3000", "http://localhost:3001") // React dev servers
+            .SetIsOriginAllowed(origin => origin != null && (origin.StartsWith("http://localhost") || origin.StartsWith("https://localhost")))
             .AllowAnyMethod()
             .AllowAnyHeader()
     );
