@@ -126,6 +126,7 @@ namespace SmartInventory.Services.Tests
             await service.UpdateAsync(product);
 
             var updated = await context.Products.FindAsync(product.Id);
+            Assert.NotNull(updated);
             Assert.Equal("NewName", updated.Name);
         }
 
