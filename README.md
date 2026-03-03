@@ -98,7 +98,7 @@ This project follows:
 
 ## Frontend Features
 
-- React + TypeScript frontend (`src/smart-inventory-frontend`)  
+- React + TypeScript frontend (`smart-inventory-frontend`)  
 - Dashboard displays:
   - Quick summary of first 5 products  
   - Full paginated **ProductsPage** table  
