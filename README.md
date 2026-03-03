@@ -84,6 +84,28 @@ This project follows:
 | Moq | Mocking framework |
 | GitHub Actions | CI pipeline |
 | Swagger (Swashbuckle) | API documentation |
+| React + TypeScript | Frontend dashboard |
+
+## Backend Features
+
+- Fully seeded database with **150 products across 15 categories**  
+- `FakeProductService` for testing without database  
+- `GetPagedAsync` API supports:
+  - Pagination (`page`, `pageSize`)  
+  - Category filtering (`categoryId`)  
+  - Search by product name (`search`)  
+- Products and Categories include a `Description` field  
+
+## Frontend Features
+
+- React + TypeScript frontend (`src/SmartInventory.Web/ClientApp`)  
+- Dashboard displays:
+  - Quick summary of first 5 products  
+  - Full paginated **ProductsPage** table  
+- ProductsPage supports:
+  - Pagination controls  
+  - Search by product name  
+  - Category filtering  
 
 ---
 
