@@ -12,11 +12,14 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code
+      # -----------------------
+      # Checkout code
+      # -----------------------
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       # -----------------------
-      # Backend
+      # Backend (ASP.NET)
       # -----------------------
       - name: Setup .NET 9 SDK
         uses: actions/setup-dotnet@v3
@@ -33,21 +36,21 @@ jobs:
         run: dotnet test --no-build --verbosity normal tests/SmartInventory.Tests
 
       # -----------------------
-      # Frontend
+      # Frontend (React)
       # -----------------------
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
 
-      - name: Change to frontend directory
-        run: cd smart-inventory-frontend
-
       - name: Install frontend dependencies
         run: npm install
+        working-directory: smart-inventory-frontend
 
-      #- name: Lint frontend
+      #- name: Lint frontend (optional)
       #  run: npm run lint
+      #  working-directory: smart-inventory-frontend
 
       - name: Build frontend
         run: npm run build
+        working-directory: smart-inventory-frontend
