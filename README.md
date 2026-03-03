@@ -28,6 +28,11 @@ The solution follows a Clean Layered Architecture approach.
 ```
 SmartInventory/
 │
+├── smart-inventory-frontend/ → React
+│  ├── src/
+│  ├── api
+│  ├── pages
+│
 ├── src/
 │  ├── SmartInventory.Web → API Layer (Controllers, DI, Middleware)
 │  ├── SmartInventory.Services → Application / Business Logic

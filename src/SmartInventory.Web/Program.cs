@@ -1,65 +1,61 @@
 using Microsoft.EntityFrameworkCore;
 using SmartInventory.Core.Interfaces;
-using SmartInventory.Data;
 using SmartInventory.Services;
-using System.Text.Json.Serialization;
-
-
+using SmartInventory.Data;
+using SmartInventory.Core.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure DbContext to use SQLite
+// -----------------------------
+// Configure DbContext
+// -----------------------------
 builder.Services.AddDbContext<InventoryDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("InventoryDb")));
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Register business services - use the real ProductService by default.
-builder.Services.AddScoped<IProductService, ProductService>();
-
-// Optionally override with the fake implementation for local testing.
-// Set `UseFakeService` to true in appsettings.Development.json to enable.
+// -----------------------------
+// Configure Product Service
+// -----------------------------
 var useFake = builder.Configuration.GetValue<bool>("UseFakeService");
+
 if (useFake)
 {
-    builder.Services.AddScoped<IProductService, FakeProductService>(); // For testing without DB
+    builder.Services.AddScoped<IProductService, FakeProductService>();
+}
+else
+{
+    builder.Services.AddScoped<IProductService, ProductService>();
 }
 
-// Logging
-builder.Services.AddLogging(logging =>
-{
-    logging.AddConsole();
-});
-
-builder.Services.AddControllers()
-    .AddJsonOptions(o =>
-    {
-        // Prevent JSON cycles when serializing entities with back-references
-        o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-    });
-
-// Enable CORS
+// -----------------------------
+// Add Controllers + CORS
+// -----------------------------
+builder.Services.AddControllers();
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactDev",
-        policy => policy
-            .SetIsOriginAllowed(origin => origin != null && (origin.StartsWith("http://localhost") || origin.StartsWith("https://localhost")))
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-    );
+    options.AddPolicy("AllowReactDev", policy =>
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Use CORS before routing
 app.UseCors("AllowReactDev");
+app.MapControllers();
 
-if (app.Environment.IsDevelopment())
+// -----------------------------
+// Seed Database
+// -----------------------------
+using (var scope = app.Services.CreateScope())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    var context = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
+
+    // ✅ Apply all migrations (creates tables if missing)
+    await context.Database.MigrateAsync();
+
+    // ✅ Seed categories + products
+    await SeedData.InitializeAsync(context);
 }
 
-app.MapControllers();
+// -----------------------------
+// Run the app
+// -----------------------------
 app.Run();

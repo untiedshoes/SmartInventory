@@ -31,8 +31,8 @@ const Dashboard: React.FC = () => {
     if (error) return <p>Error: {error}</p>;
 
     return (
-        <div style={{ padding: '20px' }}>
-            <h2>Dashboard</h2>
+        <div style={{ padding: '0' }}>
+            <h2>Product List</h2>
             <ul>
                 {products.map(p => (
                     <li key={p.id}>{p.name} – Quantity: {p.quantity}</li>

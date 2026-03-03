@@ -10,6 +10,8 @@ public class Product
     public Guid Id { get; set; } = Guid.NewGuid();
     // Product name    
     public string Name { get; set; } = string.Empty;
+    // Product description  
+    public string? Description { get; set; }
 
     // Unique stock keeping unit
     public string SKU { get; set; } = string.Empty;

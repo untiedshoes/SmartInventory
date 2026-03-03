@@ -16,6 +16,12 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
+    public async Task<IEnumerable<Product>> Get()
+    {
+        return await _service.GetAllAsync();
+    }
+
+    [HttpGet]
     public async Task<IActionResult> GetAll()
     {
         var products = await _service.GetAllAsync();
