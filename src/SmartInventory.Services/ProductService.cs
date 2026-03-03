@@ -64,4 +64,29 @@ public class ProductService : IProductService
         _context.Products.Remove(product);
         await _context.SaveChangesAsync();
     }
+
+    // ---------------------------
+    // Paginated / filtered method
+    // ---------------------------
+    public async Task<(IEnumerable<Product> Products, int TotalCount)> GetPagedAsync(
+            int page, int pageSize, Guid? categoryId = null, string? search = null)
+    {
+        var query = _context.Products.AsNoTracking().AsQueryable();
+
+        if (categoryId.HasValue)
+            query = query.Where(p => p.CategoryId == categoryId.Value);
+
+        if (!string.IsNullOrWhiteSpace(search))
+            query = query.Where(p => p.Name.Contains(search));
+
+        var totalCount = await query.CountAsync();
+
+        var data = await query
+            .OrderBy(p => p.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (data, totalCount);
+    }
 }

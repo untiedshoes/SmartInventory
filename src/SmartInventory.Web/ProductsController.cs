@@ -1,3 +1,4 @@
+using System.Formats.Asn1;
 using Microsoft.AspNetCore.Mvc;
 using SmartInventory.Core.Entities;
 using SmartInventory.Core.Interfaces;
@@ -33,6 +34,27 @@ public class ProductsController : ControllerBase
     {
         var created = await _service.CreateAsync(product);
         return CreatedAtAction(nameof(GetAll), new { id = created.Id }, created);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> GetProducts(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] Guid? categoryId = null,
+            [FromQuery] string? search = null)
+    {
+        var (data, totalCount) = await _service.GetPagedAsync(page, pageSize, categoryId, search);
+
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+        return Ok(new
+        {
+            data,
+            totalCount,
+            page,
+            pageSize,
+            totalPages
+        });
     }
 
 }

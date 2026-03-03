@@ -9,4 +9,8 @@ public interface IProductService
     Task<Product> CreateAsync(Product product);
     Task UpdateAsync(Product product);
     Task DeleteAsync(Guid id);
+
+    // New pagination method
+    Task<(IEnumerable<Product> Products, int TotalCount)> GetPagedAsync(
+            int page, int pageSize, Guid? categoryId = null, string? search = null);
 }
