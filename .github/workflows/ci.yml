@@ -41,7 +41,7 @@ jobs:
           node-version: 20
 
       - name: Change to frontend directory
-        run: cd src/SmartInventory.Web/ClientApp
+        run: cd smart-inventory-frontend
 
       - name: Install frontend dependencies
         run: npm install

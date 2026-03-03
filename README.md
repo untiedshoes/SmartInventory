@@ -1,6 +1,6 @@
 # 🚀 SmartInventory API
 
-> A production-oriented ASP.NET Core 9 Web API demonstrating clean architecture, EF Core with SQLite, automated testing, CI/CD, and modern C# 13 patterns.
+> A production-oriented ASP.NET Core 9 Web API demonstrating clean architecture, EF Core with SQLite, automated testing, CI/CD, and modern C# 13 patterns. Includes a React/TypeScript frontend with dashboard, product listing, pagination, and filtering.
 
 ---
 
@@ -43,7 +43,7 @@ SmartInventory/
 │  └── SmartInventory.Tests → Unit Tests (mirrors src structure)
 │
 └── .github/workflows/
-    └── ci.yml → CI pipeline (Build + Test)
+    └── ci.yml → CI pipeline (Windows: build backend + tests, build/lint frontend)
 ```
 
 ### Layer Responsibilities
@@ -98,7 +98,7 @@ This project follows:
 
 ## Frontend Features
 
-- React + TypeScript frontend (`src/SmartInventory.Web/ClientApp`)  
+- React + TypeScript frontend (`src/smart-inventory-frontend`)  
 - Dashboard displays:
   - Quick summary of first 5 products  
   - Full paginated **ProductsPage** table  
@@ -106,6 +106,13 @@ This project follows:
   - Pagination controls  
   - Search by product name  
   - Category filtering  
+
+  ## CI (Continuous Integration)
+
+- GitHub Actions on Windows
+- Backend: dotnet restore/build/test
+- Frontend: npm install/lint/build
+- Ensures code quality and full-stack compilation on each push/PR
 
 ---
 
