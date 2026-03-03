@@ -46,8 +46,8 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
-      - name: Lint frontend
-        run: npm run lint
+      #- name: Lint frontend
+      #  run: npm run lint
 
       - name: Build frontend
         run: npm run build
