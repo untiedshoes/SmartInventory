@@ -1,4 +1,4 @@
-name: .NET CI - Windows
+name: SmartInventory CI
 
 on:
   push:
@@ -7,36 +7,47 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-test:
+  build-test:
+    name: Build & Test Full Stack
     runs-on: windows-latest
 
     steps:
-      # 1 Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2 Setup .NET 9 SDK
+      # -----------------------
+      # Backend
+      # -----------------------
       - name: Setup .NET 9 SDK
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 9.0.x
 
-      # 3 Restore dependencies
-      - name: Restore dependencies
-        run: dotnet restore
+      - name: Restore backend dependencies
+        run: dotnet restore src/SmartInventory.Web
 
-      # 4 Build solution
-      - name: Build solution
-        run: dotnet build --no-restore --configuration Debug
+      - name: Build backend
+        run: dotnet build --no-restore src/SmartInventory.Web
 
-      # 5 Run all tests
-      - name: Run tests
-        run: dotnet test --no-build --configuration Debug --verbosity normal
+      - name: Run backend tests
+        run: dotnet test --no-build --verbosity normal tests/SmartInventory.Tests
 
-      # 6 Optional: Publish test results for artifact
-      - name: Publish test results
-        if: always()
-        uses: actions/upload-artifact@v4
+      # -----------------------
+      # Frontend
+      # -----------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          name: test-results
-          path: '**/TestResults/*.xml'
+          node-version: 20
+
+      - name: Change to frontend directory
+        run: cd src/SmartInventory.Web/ClientApp
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Lint frontend
+        run: npm run lint
+
+      - name: Build frontend
+        run: npm run build
