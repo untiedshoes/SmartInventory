@@ -1,10 +1,10 @@
-# 🚀 SmartInventory API
+# SmartInventory API
 
 > A production-oriented ASP.NET Core 9 Web API demonstrating clean architecture, EF Core with SQLite, automated testing, CI/CD, and modern C# 13 patterns. Includes a React/TypeScript frontend with dashboard, product listing, pagination, and filtering.
 
 ---
 
-## 📌 Overview
+## Overview
 
 **SmartInventory** is a layered, production-ready backend API for managing products and categories within an inventory system.
 
@@ -21,7 +21,7 @@ It is designed both as a learning vehicle and as a demonstration of production-l
 
 ---
 
-## 🧱 Architecture
+## Architecture
 
 The solution follows a Clean Layered Architecture approach.
 
@@ -58,7 +58,7 @@ SmartInventory/
 
 ---
 
-## 🏗 Design Principles
+## Design Principles
 
 This project follows:
 
@@ -72,7 +72,7 @@ This project follows:
 
 ---
 
-## 🛠 Technology Stack
+## Technology Stack
 
 | Technology | Purpose |
 |------------|----------|
@@ -130,7 +130,7 @@ This project follows:
 
 ---
 
-## 🗄 Database Strategy
+## Database Strategy
 
 Development uses SQLite for simplicity and portability.
 
@@ -166,7 +166,7 @@ This ensures:
 
 ---
 
-## 🧪 Testing Strategy
+## Testing Strategy
 
 The project uses:
 
@@ -190,7 +190,7 @@ CI automatically runs tests on push.
 
 ---
 ---
-## 🔄 Continuous Integration
+## Continuous Integration
 
 GitHub Actions pipeline:
 
@@ -202,7 +202,7 @@ See `.github/workflows/ci.yml` for details.
 
 ---
 
-## 📡 Running the API
+## Running the API
 
 ```bash
 dotnet run --project src/SmartInventory.Web
@@ -212,7 +212,7 @@ Swagger UI (local): https://localhost:5001/swagger
 
 ---
 
-## 💡 Modern C# Features Demonstrated
+## Modern C# Features Demonstrated
 
 - File-scoped namespaces
 - Nullable reference types
@@ -223,7 +223,7 @@ Swagger UI (local): https://localhost:5001/swagger
 
 ---
 
-## 🔒 Production-Readiness Foundations
+## Production-Readiness Foundations
 
 Although currently development-focused, the architecture is designed for:
 
@@ -237,7 +237,7 @@ Although currently development-focused, the architecture is designed for:
 
 ---
 
-## 📈 Future Roadmap
+## Future Roadmap
 
 Planned enhancements:
 
@@ -254,7 +254,7 @@ Planned enhancements:
 
 ---
 
-## 🎯 Purpose
+## Purpose
 
 This project serves as:
 
@@ -267,7 +267,7 @@ It is intentionally structured to scale into enterprise-grade systems.
 
 ---
 
-## 🧠 Engineering Philosophy
+## Engineering Philosophy
 
 The goal is not just to “make it work.” The goal is to:
 
@@ -279,13 +279,13 @@ The goal is not just to “make it work.” The goal is to:
 
 ---
 
-## 📄 License
+## License
 
 MIT
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 Craig Richards
 Backend Developer | .NET Engineer
