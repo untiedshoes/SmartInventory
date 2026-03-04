@@ -68,6 +68,7 @@ This project follows:
 - Test-driven friendly structure
 - Explicit migration-based schema evolution
 - Async-first design
+- Frontend error handling and null-safe React Components
 
 ---
 
@@ -94,18 +95,31 @@ This project follows:
   - Pagination (`page`, `pageSize`)  
   - Category filtering (`categoryId`)  
   - Search by product name (`search`)  
-- Products and Categories include a `Description` field  
+- Products and Categories include a `Description` field
+
+- Fully seeded database with **150 products across 15 categories**  
+- `FakeProductService` updated with:
+  - GetTopAsync(int count) for top product summary in dashboard
+  - GetPagedAsync for pagination, search, and category filtering
+- Products and Categories include a Description field
+- Paginated API endpoints support:
+  - Pagination (page, pageSize)
+  - Category filtering (categoryId)
+  - Search by product name (search)
+
 
 ## Frontend Features
 
 - React + TypeScript frontend (`smart-inventory-frontend`)  
 - Dashboard displays:
-  - Quick summary of first 5 products  
+  - Top 5 products summary using backend GetTopAsync 
+  - Inventory by category list
   - Full paginated **ProductsPage** table  
 - ProductsPage supports:
   - Pagination controls  
   - Search by product name  
-  - Category filtering  
+  - Category filtering 
+- Frontend handles empty states and avoids runtime errors when API returns no data
 
   ## CI (Continuous Integration)
 
