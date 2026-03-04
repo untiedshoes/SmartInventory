@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getProducts, getCategories } from '../api/inventoryApi';
+import { getProductsPaged, getCategories } from '../api/inventoryApi';
 
 interface Category {
     id: string;
@@ -49,26 +49,27 @@ const ProductsPage: React.FC = () => {
         fetchCategories();
     }, []);
 
-    // Fetch products
+    // Fetch products (paged)
     useEffect(() => {
         const fetchProducts = async () => {
             setLoading(true);
             try {
-                const res: PagedResponse = await getProducts(
+                const res = await getProductsPaged(
                     page,
                     pageSize,
                     selectedCategoryId || undefined,
                     searchTerm || undefined
                 );
+                const paged: PagedResponse = res.data;
 
-                // Map category names
-                const productsWithCategory = res.data.map(p => ({
+                // Add category name
+                const productsWithCategory = paged.data.map(p => ({
                     ...p,
                     categoryName: categories.find(c => c.id === p.categoryId)?.name
                 }));
 
                 setProducts(productsWithCategory);
-                setTotalPages(res.totalPages);
+                setTotalPages(paged.totalPages);
                 setError(null);
             } catch (err: any) {
                 setError(err.message || 'Failed to fetch products');
@@ -126,21 +127,21 @@ const ProductsPage: React.FC = () => {
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                             <tr>
-                                <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Name</th>
-                                <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Description</th>
-                                <th style={{ borderBottom: '1px solid #ccc', textAlign: 'right' }}>Quantity</th>
-                                <th style={{ borderBottom: '1px solid #ccc', textAlign: 'right' }}>Price</th>
-                                <th style={{ borderBottom: '1px solid #ccc', textAlign: 'left' }}>Category</th>
+                                <th style={{ textAlign: 'left' }}>Name</th>
+                                <th style={ {textAlign: 'left'}}>Description</th>
+                                <th style={{ textAlign: 'right' }}>Quantity</th>
+                                <th style={{ textAlign: 'right' }}>Price</th>
+                                <th style={{ textAlign: 'right' }}>Category</th>
                             </tr>
                         </thead>
                         <tbody>
                             {products.map(p => (
                                 <tr key={p.id}>
-                                    <td>{p.name}</td>
-                                    <td>{p.description}</td>
+                                    <td style={{ textAlign: 'left' }}>{p.name}</td>
+                                    <td style={{ textAlign: 'left' }}>{p.description}</td>
                                     <td style={{ textAlign: 'right' }}>{p.quantity}</td>
                                     <td style={{ textAlign: 'right' }}>${p.price.toFixed(2)}</td>
-                                    <td>{p.categoryName}</td>
+                                    <td style={{ textAlign: 'right' }}>{p.categoryName}</td>
                                 </tr>
                             ))}
                         </tbody>

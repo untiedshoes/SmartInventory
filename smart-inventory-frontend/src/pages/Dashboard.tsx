@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ProductsPage from './ProductsPage';
-import { getProducts, getCategories } from '../api/inventoryApi';
+import { getProductsTop, getCategories } from '../api/inventoryApi';
 
 interface ProductSummary {
     id: string;
@@ -19,6 +19,23 @@ const Dashboard: React.FC = () => {
     const [loadingTop, setLoadingTop] = useState(true);
     const [errorTop, setErrorTop] = useState<string | null>(null);
 
+    // Fetch top 5 products
+    useEffect(() => {
+        const fetchTopProducts = async () => {
+            setLoadingTop(true);
+            try {
+                const res = await getProductsTop(5);
+                setTopProducts(res.data);
+                setErrorTop(null);
+            } catch (err: any) {
+                setErrorTop(err.message || 'Failed to fetch top products');
+            } finally {
+                setLoadingTop(false);
+            }
+        };
+        fetchTopProducts();
+    }, []);
+
     // Fetch categories (for charts or filters)
     useEffect(() => {
         const fetchCategories = async () => {
@@ -32,23 +49,6 @@ const Dashboard: React.FC = () => {
         fetchCategories();
     }, []);
 
-    // Fetch top 5 products
-    useEffect(() => {
-        const fetchTopProducts = async () => {
-            setLoadingTop(true);
-            try {
-                const res = await getProducts(1, 5);
-                setTopProducts(res.data);
-                setErrorTop(null);
-            } catch (err: any) {
-                setErrorTop(err.message || 'Failed to fetch top products');
-            } finally {
-                setLoadingTop(false);
-            }
-        };
-        fetchTopProducts();
-    }, []);
-
     return (
         <div style={{ padding: '1rem' }}>
             <h1>Dashboard</h1>
@@ -58,7 +58,7 @@ const Dashboard: React.FC = () => {
                 <h2>Top 5 Products</h2>
                 {loadingTop && <p>Loading top products...</p>}
                 {errorTop && <p style={{ color: 'red' }}>Error: {errorTop}</p>}
-                {!loadingTop && !errorTop && topProducts.length > 0 && (
+                {!loadingTop && !errorTop && topProducts.length > 0 ? (
                     <ul>
                         {topProducts.map(p => (
                             <li key={p.id}>
@@ -66,6 +66,8 @@ const Dashboard: React.FC = () => {
                             </li>
                         ))}
                     </ul>
+                ) : (
+                    !loadingTop && !errorTop && <p>No top products found.</p>
                 )}
             </section>
 
@@ -79,9 +81,7 @@ const Dashboard: React.FC = () => {
                 ) : (
                     <ul>
                         {categories.map(c => (
-                            <li key={c.id}>
-                                {c.name} – {/* Example: total quantity placeholder */}
-                            </li>
+                            <li key={c.id}>{c.name}</li>
                         ))}
                     </ul>
                 )}

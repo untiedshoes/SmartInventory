@@ -3,6 +3,7 @@ using SmartInventory.Core.Interfaces;
 using SmartInventory.Services;
 using SmartInventory.Data;
 using SmartInventory.Core.Entities;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,13 +28,25 @@ else
 }
 
 // -----------------------------
-// Add Controllers + CORS
+// Add Controllers + CORS + JSON options
 // -----------------------------
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Prevent object cycles during JSON serialization
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactDev", policy =>
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+    options.AddPolicy("AllowReactDev",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:3000")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
 });
 
 var app = builder.Build();
@@ -48,11 +61,19 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
 
-    // ✅ Apply all migrations (creates tables if missing)
-    await context.Database.MigrateAsync();
+    try
+    {
+        // Apply migrations and create tables if missing
+        await context.Database.MigrateAsync();
 
-    // ✅ Seed categories + products
-    await SeedData.InitializeAsync(context);
+        // Seed categories + products
+        await SeedData.InitializeAsync(context);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error applying migrations or seeding: {ex.Message}");
+        throw;
+    }
 }
 
 // -----------------------------

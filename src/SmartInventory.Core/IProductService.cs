@@ -10,7 +10,11 @@ public interface IProductService
     Task UpdateAsync(Product product);
     Task DeleteAsync(Guid id);
 
-    // New pagination method
+    // Paginated / filtered products
     Task<(IEnumerable<Product> Products, int TotalCount)> GetPagedAsync(
-            int page, int pageSize, Guid? categoryId = null, string? search = null);
+        int page, int pageSize, Guid? categoryId = null, string? search = null);
+
+    // Top products for dashboard
+    Task<IEnumerable<Product>> GetTopAsync(int count);
+
 }

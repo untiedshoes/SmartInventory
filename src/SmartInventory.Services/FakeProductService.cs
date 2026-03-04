@@ -84,8 +84,11 @@ namespace SmartInventory.Services
             return Task.CompletedTask;
         }
 
-        // ✅ Implement GetPagedAsync with filtering and search
-        public Task<(IEnumerable<Product> Products, int TotalCount)> GetPagedAsync(int page, int pageSize, Guid? categoryId, string? search)
+        // ---------------------------
+        // Paginated / filtered method
+        // ---------------------------
+        public Task<(IEnumerable<Product> Products, int TotalCount)> GetPagedAsync(
+            int page, int pageSize, Guid? categoryId, string? search)
         {
             var query = _products.AsQueryable();
 
@@ -99,6 +102,19 @@ namespace SmartInventory.Services
             var items = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
             return Task.FromResult((items.AsEnumerable(), totalCount));
+        }
+
+        // ---------------------------
+        // Top products for dashboard
+        // ---------------------------
+        public Task<IEnumerable<Product>> GetTopAsync(int count)
+        {
+            var topProducts = _products
+                .OrderByDescending(p => p.Quantity)
+                .Take(count)
+                .AsEnumerable();
+
+            return Task.FromResult(topProducts);
         }
     }
 }
