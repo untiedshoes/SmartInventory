@@ -168,16 +168,87 @@ This ensures:
 
 ## Testing Strategy
 
+The project uses xUnit for unit tests, combined with EF Core InMemory provider to isolate tests from the production database. Service-level tests ensure that business logic works as expected, including creation, updating, deletion, pagination, and filtering.
+
 The project uses:
 
 - xUnit
 - EF Core InMemory provider
 - Service-level unit tests
 
+Testing Strategy (Expanded)
+
+- **CRUD Tests** (CreateAsync, GetByIdAsync, UpdateAsync, DeleteAsync)
+
+  - Ensure products can be created, read, updated, and deleted correctly.
+
+  - Includes edge cases such as:
+
+  - Creating a product with negative quantity throws an exception.
+
+  - Deleting a non-existent product throws KeyNotFoundException.
+
+  - Rationale: Guarantees business logic integrity and prevents regression.
+
+- GetAllAsync
+
+  - Validates that all products are retrieved.
+
+  - Uses AsNoTracking to ensure the query returns lightweight, detached entities.
+
+  - Rationale: Confirms the service layer returns the correct set of products, independent of EF Core change tracking.
+
+- **Pagination Tests** (GetPagedAsync)
+
+  - Validates correct page size, total count, and filtered results by:
+
+  - Page number and page size
+
+  - Category filter
+
+  - Search term filter
+
+  - Combination of category + search term
+
+  - **Zero-padding Note:** Product names in tests are zero-padded (Product01, Product02, …) to ensure deterministic lexicographical sorting.
+
+  - Without padding, "Product10" would come before "Product2" when ordered by string.
+
+  - This ensures pagination tests always return consistent results.
+
+  - **Rationale:** Guarantees predictable pagination and filtering, which is critical for frontend UI components.
+
+- **Top Products Test** (GetTopAsync)
+
+  - Returns products with highest quantity for dashboard summaries.
+
+  - Validates ordering and ensures the count matches request or total products if fewer.
+
+  - **Rationale:** Ensures that summary metrics are accurate and correctly ordered.
+
+- **FakeProductService Tests**
+
+  - FakeProductService provides an in-memory, seedable collection without a database.
+
+  - Supports all service methods (CreateAsync, GetByIdAsync, UpdateAsync, DeleteAsync, GetPagedAsync, GetTopAsync).
+
+  - **Rationale:** Useful for quick unit testing, CI pipelines, or frontend simulations without needing a real database.
+
+**Why Testing Matters in This Project**
+
+  - **Deterministic Results:** Using InMemoryDatabase and zero-padded names ensures consistent order and avoids flaky tests.
+
+  - **Isolation:** Each test runs in a fresh context; no test depends on another.
+
+  - **Coverage:** Critical business logic, edge cases, pagination, search, and dashboard metrics are all validated.
+
+  - **Confidence in CI/CD:** Automated tests run in GitHub Actions, preventing regressions before deployment.
+
 Tests mirror the source structure:
 
 ```
 tests/SmartInventory.Tests/Services/ProductServiceTests.cs
+tests/SmartInventory.Tests/Services/FakeProductServiceTests.cs
 ```
 
 Run all tests:
