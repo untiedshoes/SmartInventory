@@ -316,11 +316,11 @@ Planned enhancements:
 - Global exception middleware
 - Structured logging
 - DTO + AutoMapper separation
-- Pagination & filtering
+- Pagination & filtering → (Done)
 - Health checks
 - OpenTelemetry tracing
 - Docker containerization
-- Frontend client (Blazor or React)
+- Frontend client (Blazor or React) → (Done - Chose React)
 - Event-driven or microservices exploration
 
 ---
