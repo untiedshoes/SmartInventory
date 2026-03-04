@@ -90,7 +90,8 @@ This project follows:
 ## Backend Features
 
 - Fully seeded database with **150 products across 15 categories**  
-- `FakeProductService` for testing without database  
+- `FakeProductService` for testing without database.
+  - Enable `UseFakeService` in `appsettings.Development.json`
 - `GetPagedAsync` API supports:
   - Pagination (`page`, `pageSize`)  
   - Category filtering (`categoryId`)  
