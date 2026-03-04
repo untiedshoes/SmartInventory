@@ -121,7 +121,7 @@ This project follows:
   - Category filtering 
 - Frontend handles empty states and avoids runtime errors when API returns no data
 
-  ## CI (Continuous Integration)
+## CI (Continuous Integration)
 
 - GitHub Actions on Windows
 - Backend: dotnet restore/build/test

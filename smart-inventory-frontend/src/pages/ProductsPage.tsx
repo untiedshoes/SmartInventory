@@ -140,7 +140,7 @@ const ProductsPage: React.FC = () => {
                                     <td style={{ textAlign: 'left' }}>{p.name}</td>
                                     <td style={{ textAlign: 'left' }}>{p.description}</td>
                                     <td style={{ textAlign: 'right' }}>{p.quantity}</td>
-                                    <td style={{ textAlign: 'right' }}>${p.price.toFixed(2)}</td>
+                                    <td style={{ textAlign: 'right' }}>£{p.price.toFixed(2)}</td>
                                     <td style={{ textAlign: 'right' }}>{p.categoryName}</td>
                                 </tr>
                             ))}
