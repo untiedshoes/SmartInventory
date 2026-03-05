@@ -28,33 +28,48 @@ The solution follows a Clean Layered Architecture approach.
 ```
 SmartInventory/
 │
-├── smart-inventory-frontend/ → React
+├── smart-inventory-frontend/ → React frontend
 │  ├── src/
-│  ├── api
-│  ├── pages
+│  ├── api/
+│  └── pages/
 │
 ├── src/
-│  ├── SmartInventory.Web → API Layer (Controllers, DI, Middleware)
+│  ├── SmartInventory.Web → API Layer
+│  │   ├── Controllers
+│  │   ├── DI wiring
+│  │   └── Middleware (Swagger, error handling)
+│  │
 │  ├── SmartInventory.Services → Application / Business Logic
-│  ├── SmartInventory.Data → EF Core, DbContext, Migrations
+│  │   ├── ProductService (EF Core)
+│  │   └── FakeProductService (In-memory, DTOs)
+│  │
+│  ├── SmartInventory.Data → Persistence
+│  │   ├── InventoryDbContext
+│  │   └── Migrations
+│  │
 │  └── SmartInventory.Core → Domain Entities & Contracts
+│      ├── Entities (Product, Category)
+│      ├── Interfaces (IProductService)
+│      └── DTOs
 │
 ├── tests/
-│  └── SmartInventory.Tests → Unit Tests (mirrors src structure)
+│   └── SmartInventory.Tests → Unit Tests (mirrors src structure)
+│       ├── Services
+│       └── Controllers
 │
 └── .github/workflows/
-    └── ci.yml → CI pipeline (Windows: build backend + tests, build/lint frontend)
+    └── ci.yml → CI pipeline (build backend, run tests, lint/build frontend)
 ```
 
 ### Layer Responsibilities
 
 | Layer | Responsibility |
-|--------|----------------|
-| Core | Domain entities and abstractions |
-| Data | Persistence logic, EF Core configuration |
-| Services | Business rules and application logic |
-| Web | HTTP layer, DI wiring, middleware, Swagger |
-| Tests | Unit testing with isolated in-memory database |
+|-------|----------------|
+| Core | Domain entities, DTOs, and interfaces (contracts) |
+| Data | Persistence logic, EF Core DbContext, migrations |
+| Services | Business rules and application logic; includes `ProductService` (EF Core) and `FakeProductService` (in-memory + DTOs for dev/frontend simulation) |
+| Web | API layer: Controllers, DI wiring, middleware, Swagger; maps DTOs to/from entities; supports dev-mode DTO APIs via `FakeProductService` |
+| Tests | Unit testing with isolated in-memory services and databases; validates CRUD, pagination, filtering, and top-N metrics |
 
 ---
 
