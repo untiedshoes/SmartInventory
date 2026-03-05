@@ -352,6 +352,62 @@ It is intentionally structured to scale into enterprise-grade systems.
 
 ---
 
+## Development Guidelines (Adding New Endpoints)
+
+## Adding New API Endpoints with DTOs
+
+When introducing a new API endpoint (CRUD or query) for products, categories, or other entities, follow this checklist to ensure consistency, testability, and dev-mode support:
+
+### 1. Define the DTOs
+- Create `CreateXDto`, `UpdateXDto`, and `XDto` as needed.
+- Include only the fields required by the frontend.
+- Keep DTOs separate from entities to enforce encapsulation.
+
+### 2. Update Services
+- **Production service** (`ProductService` or relevant):
+  - Implement the endpoint logic using EF Core.
+  - Return entities or mapped DTOs if needed.
+- **Dev-mode / Fake service** (`FakeProductService`):
+  - Implement in-memory version returning DTOs for frontend simulation.
+  - Use deterministic seeding for predictable results.
+  - Include async methods like `GetAllDtosAsync`, `GetByIdDtoAsync`, `GetPagedDtosAsync`, `GetTopDtosAsync`.
+
+### 3. Update Controllers
+- Inject both production `IProductService` and optional `FakeProductService`.
+- Use `_fakeService` in dev mode for DTO return values.
+- Map entities to DTOs via AutoMapper in production mode.
+- Handle null / empty states gracefully.
+
+### 4. Add Unit Tests
+- Add tests in `SmartInventory.Tests/Services`:
+  - Verify **CRUD** operations on the fake service.
+  - Test **pagination, filtering, and search**.
+  - Test **Top-N or summary endpoints** if applicable.
+- Use deterministic data (zero-padded names, seeded quantities) for predictable ordering.
+- Test both normal and edge cases (e.g., missing entity, empty search results).
+
+### 5. Frontend Considerations
+- Update the API client (React/TypeScript) to call the new endpoint.
+- Validate response DTOs match the frontend expectations.
+- Handle empty states or errors safely.
+
+### 6. Documentation
+- Update `README.md`:
+  - Include endpoint summary, parameters, and expected DTO.
+  - Add tests or dev-mode notes if applicable.
+
+### Quick Reference
+| Step | Action |
+|------|--------|
+| 1 | Define DTOs |
+| 2 | Implement in Production service |
+| 3 | Implement in Fake service (dev-mode DTOs) |
+| 4 | Add Controller endpoints (use dev-mode DTOs if `_fakeService != null`) |
+| 5 | Add Unit Tests for all behaviors |
+| 6 | Update Frontend and Documentation |
+
+---
+
 ## Engineering Philosophy
 
 The goal is not just to “make it work.” The goal is to:
