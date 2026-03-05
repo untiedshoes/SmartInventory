@@ -89,24 +89,21 @@ This project follows:
 
 ## Backend Features
 
-- Fully seeded database with **150 products across 15 categories**  
-- `FakeProductService` for testing without database.
-  - Enable `UseFakeService` in `appsettings.Development.json`
-- `GetPagedAsync` API supports:
-  - Pagination (`page`, `pageSize`)  
-  - Category filtering (`categoryId`)  
-  - Search by product name (`search`)  
-- Products and Categories include a `Description` field
-
-- Fully seeded database with **150 products across 15 categories**  
-- `FakeProductService` updated with:
-  - GetTopAsync(int count) for top product summary in dashboard
-  - GetPagedAsync for pagination, search, and category filtering
-- Products and Categories include a Description field
+- Fully seeded database with **150 products across 15 categories**
+- `FakeProductService` for testing and dev-mode API simulation:
+  - Implements IProductService without EF Core
+  - Provides deterministic in-memory products and categories
+  - Supports CRUD, pagination, filtering, and top-N summaries
+  - DTO-aware methods for frontend simulation:
+    - `GetAllDtosAsync()`
+    - `GetTopDtosAsync(int count)`
+    - `GetPagedDtosAsync(page, pageSize, categoryId?, search?)`
+    - `GetByIdDtoAsync(Guid id)`
 - Paginated API endpoints support:
-  - Pagination (page, pageSize)
-  - Category filtering (categoryId)
-  - Search by product name (search)
+  - Pagination (`page`, `pageSize`)
+  - Category filtering (`categoryId`)
+  - Search by product name (`search`)
+- Product and Category entities include `Description` field
 
 
 ## Frontend Features
@@ -228,12 +225,13 @@ Testing Strategy (Expanded)
   - **Rationale:** Ensures that summary metrics are accurate and correctly ordered.
 
 - **FakeProductService Tests**
-
-  - FakeProductService provides an in-memory, seedable collection without a database.
-
-  - Supports all service methods (CreateAsync, GetByIdAsync, UpdateAsync, DeleteAsync, GetPagedAsync, GetTopAsync).
-
-  - **Rationale:** Useful for quick unit testing, CI pipelines, or frontend simulations without needing a real database.
+  - Provides in-memory, seedable product and category collections
+  - Supports all IProductService methods
+  - Unit tests validate:
+    - CRUD operations
+    - Pagination and filtering
+    - Top-N product summaries
+  - **Rationale:** Enables deterministic unit tests, CI-friendly validation, and frontend development without a real database
 
 **Why Testing Matters in This Project**
 

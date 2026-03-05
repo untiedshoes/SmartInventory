@@ -1,130 +1,185 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using SmartInventory.Core.Entities;
+using SmartInventory.Core.Interfaces;
+using Xunit;
 
 namespace SmartInventory.Tests.Services
 {
     /// <summary>
-    /// Fake in-memory product service for testing without a real database.
-    /// Mirrors ProductService behavior for unit testing.
+    /// Unit tests for the FakeProductService.
+    /// Verifies that CRUD, pagination, filtering, and top-N behaviors work correctly.
     /// </summary>
-    public class FakeProductService
+    public class FakeProductServiceTests
     {
-        // In-memory storage
-        private readonly List<Product> _products;
-        private readonly List<Category> _categories;
+        /// <summary>
+        /// Helper to create a fresh FakeProductService instance.
+        /// Each instance is seeded with deterministic categories and products.
+        /// </summary>
+        private IProductService GetService() => new SmartInventory.Services.FakeProductService();
 
-        public FakeProductService()
+        // ----------------------- CREATE TESTS -----------------------
+
+        [Fact]
+        public async Task CreateAsync_ShouldAddProduct()
         {
-            // Seed categories
-            _categories = new List<Category>
+            var service = GetService();
+
+            var category = new Category { Id = Guid.NewGuid(), Name = "NewCategory" };
+            var product = new Product { Name = "TestProduct", Quantity = 5, Category = category };
+
+            var created = await service.CreateAsync(product);
+
+            Assert.NotNull(created);
+            Assert.Equal("TestProduct", created.Name);
+            Assert.Equal(category.Id, created.CategoryId);
+        }
+
+        // ----------------------- READ TESTS -----------------------
+
+        [Fact]
+        public async Task GetAllAsync_ShouldReturnAllProducts()
+        {
+            var service = GetService();
+            var all = await service.GetAllAsync();
+
+            // Fake service seeds 10 products
+            Assert.Equal(10, all.Count());
+        }
+
+        [Fact]
+        public async Task GetByIdAsync_ShouldReturnProduct_WhenExists()
+        {
+            var service = GetService();
+            var existing = (await service.GetAllAsync()).First();
+
+            var fetched = await service.GetByIdAsync(existing.Id);
+
+            Assert.NotNull(fetched);
+            Assert.Equal(existing.Name, fetched!.Name);
+        }
+
+        [Fact]
+        public async Task GetByIdAsync_ShouldReturnNull_WhenNotExists()
+        {
+            var service = GetService();
+
+            var result = await service.GetByIdAsync(Guid.NewGuid());
+
+            Assert.Null(result);
+        }
+
+        // ----------------------- UPDATE TESTS -----------------------
+
+        [Fact]
+        public async Task UpdateAsync_ShouldModifyProduct()
+        {
+            var service = GetService();
+            var product = (await service.GetAllAsync()).First();
+            product.Name = "UpdatedName";
+
+            await service.UpdateAsync(product);
+
+            var updated = await service.GetByIdAsync(product.Id);
+            Assert.Equal("UpdatedName", updated!.Name);
+        }
+
+        // ----------------------- DELETE TESTS -----------------------
+
+        [Fact]
+        public async Task DeleteAsync_ShouldRemoveProduct_WhenExists()
+        {
+            var service = GetService();
+            var product = (await service.GetAllAsync()).First();
+
+            await service.DeleteAsync(product.Id);
+
+            var remaining = await service.GetAllAsync();
+            Assert.DoesNotContain(remaining, p => p.Id == product.Id);
+        }
+
+        [Fact]
+        public async Task DeleteAsync_ShouldNotFail_WhenProductDoesNotExist()
+        {
+            var service = GetService();
+            await service.DeleteAsync(Guid.NewGuid());
+
+            var all = await service.GetAllAsync();
+            Assert.Equal(10, all.Count()); // seeded products remain
+        }
+
+        // ----------------------- PAGINATION / FILTERING -----------------------
+
+        [Fact]
+        public async Task GetPagedAsync_ShouldReturnCorrectPage()
+        {
+            var service = GetService();
+
+            var (pageItems, totalCount) = await service.GetPagedAsync(2, 3);
+
+            Assert.Equal(10, totalCount);
+            Assert.Equal(3, pageItems.Count());
+            Assert.Equal("Product04", pageItems.First().Name); // deterministic order
+        }
+
+        [Fact]
+        public async Task GetPagedAsync_ShouldFilterByCategory()
+        {
+            var service = GetService();
+            var catId = (await service.GetAllAsync()).First().CategoryId;
+
+            var (products, _) = await service.GetPagedAsync(1, 10, categoryId: catId);
+
+            Assert.All(products, p => Assert.Equal(catId, p.CategoryId));
+        }
+
+        [Fact]
+        public async Task GetPagedAsync_ShouldFilterBySearchTerm()
+        {
+            var service = GetService();
+
+            var (products, _) = await service.GetPagedAsync(1, 10, search: "Bar");
+
+            Assert.All(products, p => Assert.Contains("Bar", p.Name + p.Description));
+        }
+
+        [Fact]
+        public async Task GetPagedAsync_ShouldFilterByCategoryAndSearch()
+        {
+            var service = GetService();
+            var catId = (await service.GetAllAsync()).First().CategoryId;
+
+            var (products, _) = await service.GetPagedAsync(1, 10, categoryId: catId, search: "Bar");
+
+            Assert.All(products, p =>
             {
-                new Category { Id = Guid.NewGuid(), Name = "Category 1" },
-                new Category { Id = Guid.NewGuid(), Name = "Category 2" }
-            };
-
-            // Seed products
-            // Use zero-padded names ("Product01") to fix ordering in pagination tests
-            _products = new List<Product>();
-            for (int i = 1; i <= 10; i++)
-            {
-                _products.Add(new Product
-                {
-                    Id = Guid.NewGuid(),
-                    Name = $"Product{i:D2}",                // D2 ensures Product01 < Product02 < ... < Product10
-                    Description = i % 2 == 0 ? "Foo" : "Bar", // Alternating descriptions for search tests
-                    Quantity = i * 10,                        // Deterministic quantity for top product tests
-                    CategoryId = i <= 5 ? _categories[0].Id : _categories[1].Id, // First 5 -> Cat1, next 5 -> Cat2
-                    Category = i <= 5 ? _categories[0] : _categories[1]
-                });
-            }
+                Assert.Equal(catId, p.CategoryId);
+                Assert.Contains("Bar", p.Name + p.Description);
+            });
         }
 
-        // -----------------------------
-        // Simulate async EF Core queries
-        // -----------------------------
-        public Task<IEnumerable<Product>> GetAllAsync()
+        // ----------------------- TOP-N TESTS -----------------------
+
+        [Fact]
+        public async Task GetTopAsync_ShouldReturnTopNProducts()
         {
-            // Return a copy to prevent external modifications
-            return Task.FromResult(_products.AsEnumerable());
+            var service = GetService();
+
+            var top = await service.GetTopAsync(3);
+
+            Assert.Equal(3, top.Count());
+            Assert.True(top.First().Quantity >= top.Last().Quantity);
         }
 
-        public Task<Product?> GetByIdAsync(Guid id)
+        [Fact]
+        public async Task GetTopAsync_ShouldReturnAllIfCountExceedsTotal()
         {
-            var product = _products.FirstOrDefault(p => p.Id == id);
-            return Task.FromResult(product);
-        }
+            var service = GetService();
 
-        public Task<Product> CreateAsync(Product product)
-        {
-            // Assign a new ID to simulate DB-generated IDs
-            product.Id = Guid.NewGuid();
+            var top = await service.GetTopAsync(20);
 
-            // Assign category reference if provided
-            if (product.Category != null)
-            {
-                product.CategoryId = product.Category.Id;
-            }
-
-            _products.Add(product);
-            return Task.FromResult(product);
-        }
-
-        public Task UpdateAsync(Product product)
-        {
-            // Find existing product by ID
-            var index = _products.FindIndex(p => p.Id == product.Id);
-            if (index >= 0)
-            {
-                _products[index] = product; // Replace
-            }
-            return Task.CompletedTask;
-        }
-
-        public Task DeleteAsync(Guid id)
-        {
-            _products.RemoveAll(p => p.Id == id);
-            return Task.CompletedTask;
-        }
-
-        // -----------------------------
-        // Pagination + Filtering
-        // -----------------------------
-        public Task<(IEnumerable<Product> Products, int TotalCount)> GetPagedAsync(
-            int page, int pageSize, Guid? categoryId = null, string? search = null)
-        {
-            var query = _products.AsQueryable();
-
-            if (categoryId.HasValue)
-                query = query.Where(p => p.CategoryId == categoryId.Value);
-
-            if (!string.IsNullOrWhiteSpace(search))
-                query = query.Where(p => p.Name.Contains(search) || p.Description.Contains(search));
-
-            var totalCount = query.Count();
-
-            var data = query
-                .OrderBy(p => p.Name)                     // Important: deterministic order for pagination tests
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            return Task.FromResult((data.AsEnumerable(), totalCount));
-        }
-
-        // -----------------------------
-        // Top products for dashboard
-        // -----------------------------
-        public Task<IEnumerable<Product>> GetTopAsync(int count)
-        {
-            var topProducts = _products
-                .OrderByDescending(p => p.Quantity)      // High quantity first
-                .Take(count)
-                .ToList();
-
-            return Task.FromResult(topProducts.AsEnumerable());
+            Assert.Equal(10, top.Count());
         }
     }
 }

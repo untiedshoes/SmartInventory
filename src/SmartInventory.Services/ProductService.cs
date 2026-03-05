@@ -1,26 +1,35 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SmartInventory.Core.Entities;
 using SmartInventory.Core.Interfaces;
 using SmartInventory.Data;
+using SmartInventory.Services.DTOs;
 
 namespace SmartInventory.Services
 {
+    /// <summary>
+    /// Implements IProductService using EF Core.
+    /// Handles mapping between DTOs and entities internally.
+    /// </summary>
     public class ProductService : IProductService
     {
         private readonly InventoryDbContext _context;
         private readonly ILogger<ProductService> _logger;
+        private readonly IMapper _mapper;
 
-        public ProductService(InventoryDbContext context, ILogger<ProductService> logger)
+        public ProductService(InventoryDbContext context, ILogger<ProductService> logger, IMapper mapper)
         {
             _context = context;
             _logger = logger;
+            _mapper = mapper;
         }
 
+        /// <summary>
+        /// Retrieve all products as DTOs for API output
+        /// </summary> <returns>List of ProductDTOs</returns>
         public async Task<IEnumerable<Product>> GetAllAsync()
         {
-            _logger.LogInformation("Retrieving all products.");
-            // Only include Category, not Category.Products
             return await _context.Products
                 .Include(p => p.Category)
                 .AsNoTracking()
@@ -56,6 +65,7 @@ namespace SmartInventory.Services
         {
             var product = await _context.Products.FindAsync(id);
             if (product == null) throw new KeyNotFoundException("Product not found.");
+
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
         }
@@ -67,7 +77,7 @@ namespace SmartInventory.Services
             int page, int pageSize, Guid? categoryId = null, string? search = null)
         {
             var query = _context.Products
-                .Include(p => p.Category) // Include Category, but not Category.Products
+                .Include(p => p.Category)
                 .AsNoTracking()
                 .AsQueryable();
 
@@ -78,7 +88,6 @@ namespace SmartInventory.Services
                 query = query.Where(p => p.Name.Contains(search) || p.Description.Contains(search));
 
             var totalCount = await query.CountAsync();
-
             var data = await query
                 .OrderBy(p => p.Name)
                 .Skip((page - 1) * pageSize)
@@ -95,7 +104,7 @@ namespace SmartInventory.Services
         {
             return await _context.Products
                 .Include(p => p.Category)
-                .OrderByDescending(p => p.Quantity) // Or any metric you want
+                .OrderByDescending(p => p.Quantity)
                 .Take(count)
                 .AsNoTracking()
                 .ToListAsync();

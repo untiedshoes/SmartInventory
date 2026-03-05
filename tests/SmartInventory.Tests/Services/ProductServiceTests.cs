@@ -1,3 +1,5 @@
+using AutoMapper;
+using SmartInventory.Services.Mapping;
 using Microsoft.EntityFrameworkCore;
 using SmartInventory.Core.Entities;
 using SmartInventory.Data;
@@ -12,6 +14,18 @@ namespace SmartInventory.Services.Tests
 {
     public class ProductServiceTests
     {
+        private readonly IMapper _mapper;
+
+        public ProductServiceTests()
+        {
+            // Configure AutoMapper for tests
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile<MappingProfile>(); // your profile from Services/Mapping
+            });
+
+            _mapper = config.CreateMapper();
+        }
         /// <summary>
         /// Creates a fresh in-memory DbContext for each test with optional deterministic seed data.
         /// </summary>
@@ -74,7 +88,7 @@ namespace SmartInventory.Services.Tests
             context.Categories.Add(category);
             await context.SaveChangesAsync();
 
-            var service = new ProductService(context, NullLogger<ProductService>.Instance);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance, _mapper);
             var product = new Product { Name = "Test Product", Quantity = 5, Category = category };
 
             // Act: call the service
@@ -95,7 +109,7 @@ namespace SmartInventory.Services.Tests
             context.Categories.Add(category);
             await context.SaveChangesAsync();
 
-            var service = new ProductService(context, NullLogger<ProductService>.Instance);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance, _mapper);
             var product = new Product { Name = "Invalid", Quantity = -1, Category = category };
 
             // Act & Assert: service validates quantity
@@ -109,7 +123,7 @@ namespace SmartInventory.Services.Tests
         public async Task GetAllAsync_ShouldReturnAllProducts()
         {
             var context = GetInMemoryDbContext(seedData: true);
-            var service = new ProductService(context, NullLogger<ProductService>.Instance);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance, _mapper);
 
             var all = await service.GetAllAsync();
 
@@ -121,7 +135,7 @@ namespace SmartInventory.Services.Tests
         public async Task GetByIdAsync_ShouldReturnProduct_WhenExists()
         {
             var context = GetInMemoryDbContext(seedData: true);
-            var service = new ProductService(context, NullLogger<ProductService>.Instance);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance, _mapper);
 
             var product = context.Products.First();
             var fetched = await service.GetByIdAsync(product.Id);
@@ -134,7 +148,7 @@ namespace SmartInventory.Services.Tests
         public async Task GetByIdAsync_ShouldReturnNull_WhenNotExists()
         {
             var context = GetInMemoryDbContext(seedData: true);
-            var service = new ProductService(context, NullLogger<ProductService>.Instance);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance, _mapper);
 
             var result = await service.GetByIdAsync(Guid.NewGuid());
 
@@ -147,7 +161,7 @@ namespace SmartInventory.Services.Tests
         public async Task UpdateAsync_ShouldUpdateProduct()
         {
             var context = GetInMemoryDbContext(seedData: true);
-            var service = new ProductService(context, NullLogger<ProductService>.Instance);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance, _mapper);
 
             var product = context.Products.First();
             product.Name = "UpdatedName";
@@ -164,7 +178,7 @@ namespace SmartInventory.Services.Tests
         public async Task DeleteAsync_ShouldRemoveProduct_WhenExists()
         {
             var context = GetInMemoryDbContext(seedData: true);
-            var service = new ProductService(context, NullLogger<ProductService>.Instance);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance, _mapper);
 
             var product = context.Products.First();
             await service.DeleteAsync(product.Id);
@@ -177,7 +191,7 @@ namespace SmartInventory.Services.Tests
         public async Task DeleteAsync_ShouldThrow_WhenNotExists()
         {
             var context = GetInMemoryDbContext(seedData: true);
-            var service = new ProductService(context, NullLogger<ProductService>.Instance);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance, _mapper);
 
             await Assert.ThrowsAsync<KeyNotFoundException>(async () =>
                 await service.DeleteAsync(Guid.NewGuid()));
@@ -192,7 +206,7 @@ namespace SmartInventory.Services.Tests
             // Create a fresh in-memory database seeded with 10 products (Product01, Product02, ..., Product10)
             // Zero-padding ensures lexicographical ordering works consistently (Product01 < Product02 < ... < Product10)
             var context = GetInMemoryDbContext(seedData: true);
-            var service = new ProductService(context, NullLogger<ProductService>.Instance);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance, _mapper);
 
             int page = 2;      // We want the second page
             int pageSize = 3;  // Each page has 3 items
@@ -228,7 +242,7 @@ namespace SmartInventory.Services.Tests
         public async Task GetPagedAsync_ShouldFilter_ByCategoryId()
         {
             var context = GetInMemoryDbContext(seedData: true);
-            var service = new ProductService(context, NullLogger<ProductService>.Instance);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance, _mapper);
 
             var cat1Id = context.Categories.First().Id;
             var (products, _) = await service.GetPagedAsync(1, 10, categoryId: cat1Id);
@@ -241,7 +255,7 @@ namespace SmartInventory.Services.Tests
         public async Task GetPagedAsync_ShouldFilter_BySearchTerm()
         {
             var context = GetInMemoryDbContext(seedData: true);
-            var service = new ProductService(context, NullLogger<ProductService>.Instance);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance, _mapper);
 
             var (products, _) = await service.GetPagedAsync(1, 10, search: "Bar");
 
@@ -254,7 +268,7 @@ namespace SmartInventory.Services.Tests
         public async Task GetPagedAsync_ShouldFilter_ByCategoryAndSearch_Together()
         {
             var context = GetInMemoryDbContext(seedData: true);
-            var service = new ProductService(context, NullLogger<ProductService>.Instance);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance, _mapper);
 
             var cat1Id = context.Categories.First().Id;
             var (products, _) = await service.GetPagedAsync(1, 10, categoryId: cat1Id, search: "Bar");
@@ -275,7 +289,7 @@ namespace SmartInventory.Services.Tests
         public async Task GetTopAsync_ShouldReturn_TopNProducts()
         {
             var context = GetInMemoryDbContext(seedData: true);
-            var service = new ProductService(context, NullLogger<ProductService>.Instance);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance, _mapper);
 
             var top = await service.GetTopAsync(3);
 
@@ -288,7 +302,7 @@ namespace SmartInventory.Services.Tests
         public async Task GetTopAsync_ShouldReturn_AllIfCountExceedsTotal()
         {
             var context = GetInMemoryDbContext(seedData: true);
-            var service = new ProductService(context, NullLogger<ProductService>.Instance);
+            var service = new ProductService(context, NullLogger<ProductService>.Instance, _mapper);
 
             var top = await service.GetTopAsync(20);
 

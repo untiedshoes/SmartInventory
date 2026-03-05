@@ -1,8 +1,10 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using SmartInventory.Core.Interfaces;
 using SmartInventory.Services;
 using SmartInventory.Data;
-using SmartInventory.Core.Entities;
+using SmartInventory.Services.Mapping;
+using SmartInventory.Services.Validators;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,13 +16,21 @@ builder.Services.AddDbContext<InventoryDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // -----------------------------
-// Configure Product Service
+// AutoMapper & FluentValidation
+// -----------------------------
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddValidatorsFromAssemblyContaining<CreateProductValidator>();
+
+// -----------------------------
+// Configure Product Service (real or fake)
 // -----------------------------
 var useFake = builder.Configuration.GetValue<bool>("UseFakeService");
 
 if (useFake)
 {
-    builder.Services.AddScoped<IProductService, FakeProductService>();
+    // DTO-aware fake service
+    builder.Services.AddScoped<FakeProductService>();
+    builder.Services.AddScoped<IProductService>(sp => sp.GetRequiredService<FakeProductService>());
 }
 else
 {
@@ -28,12 +38,11 @@ else
 }
 
 // -----------------------------
-// Add Controllers + CORS + JSON options
+// Controllers + CORS + JSON options
 // -----------------------------
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        // Prevent object cycles during JSON serialization
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.WriteIndented = true;
     });
@@ -51,22 +60,15 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UseCors("AllowReactDev");
-app.MapControllers();
-
 // -----------------------------
-// Seed Database
+// Apply migrations & seed database
 // -----------------------------
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<InventoryDbContext>();
-
     try
     {
-        // Apply migrations and create tables if missing
         await context.Database.MigrateAsync();
-
-        // Seed categories + products
         await SeedData.InitializeAsync(context);
     }
     catch (Exception ex)
@@ -75,6 +77,12 @@ using (var scope = app.Services.CreateScope())
         throw;
     }
 }
+
+// -----------------------------
+// Use CORS & Map Controllers
+// -----------------------------
+app.UseCors("AllowReactDev");
+app.MapControllers();
 
 // -----------------------------
 // Run the app
